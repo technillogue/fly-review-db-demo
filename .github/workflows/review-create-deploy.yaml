@@ -22,7 +22,7 @@ jobs:
         - run: echo "deploying to $(cat ./app)"
         # - name: Setup tmate session # this lets you SSH into the container
         #   uses: mxschmitt/action-tmate@v3
-        - run: flyctl apps create -o mobilecoin-twix $(cat ./app)
+        - run: flyctl apps create -o personal $(cat ./app)
         - run: if [ -n "$REVIEW_APP_SECRETS" ]; then flyctl secrets -a $(cat ./app) set $REVIEW_APP_SECRETS; fi;
         - run: flyctl pg attach -a $(cat ./app) --postgres-app twix-review-db
         - name: Execute DB Migrations
@@ -30,5 +30,5 @@ jobs:
             JDBC_DATABASE_URL="offline:postgresql" ./gradlew --quiet liquibaseUpdateSql|
             grep -v liquibase-plugin > update.sql # gradle -q isn't quiet enough
             echo -e '\n\q' >> update.sql # quit
-            cat update.sql | flyctl postgres connect --app $(cat ./app) --postgres-app $REVIEW_DB_NAME --database $(cat ./app | tr - _)
+            cat update.sql | flyctl postgres connect --app $REVIEW_DB_NAME --database $(cat ./app | tr - _)
         - run: flyctl deploy -a $(cat ./app) --remote-only
