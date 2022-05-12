@@ -5,6 +5,7 @@ package demo.v1;
 service UserService {
   rpc GetUser (GetUserRequest) returns (GetUserResponse);
   rpc SetUser (SetUserRequest) returns (SetUserResponse);
+  rpc Foo (FooRequest) returns (FooResponse);
 }
 
 message GetUserRequest {
@@ -28,3 +29,6 @@ message User {
   string name = 2;
   string about = 3;
 }
+
+message FooRequest {}
+message FooResponse { string message = 1; }
