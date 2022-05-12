@@ -10,9 +10,11 @@ import io.grpc.testing.GrpcCleanupRule
 import io.grpc.util.MutableHandlerRegistry
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class ApplicationTest : DatabaseSpec() {
-
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
     private val grpcCleanupRule: GrpcCleanupRule = GrpcCleanupRule()
 
     private lateinit var channel: ManagedChannel
@@ -36,6 +38,7 @@ class ApplicationTest : DatabaseSpec() {
         channel = grpcCleanupRule.register(
             InProcessChannelBuilder.forName(userServiceName).build()
         )
+        serviceRegistry.addService(UserService())
     }
 
     @AfterEach
@@ -47,14 +50,20 @@ class ApplicationTest : DatabaseSpec() {
     fun `test setting and getting a user`() = runBlocking {
         // Stand up our service stubs
         val userStub = UserServiceGrpcKt.UserServiceCoroutineStub(channel)
-        val testUser = demo.v1.user { name = "terezi"; about = "W3 M4K3 OUR OWN LUCK 4ND YOU'R3 4BOUT TO PROV3 TH4T" }
-        println("test")
+        val testUser = demo.v1.user { name = "terezi"; about = "Seer of Mind" }
         // Set user should return what was set
         val reply1 = userStub.setUser(setUserRequest { user = testUser })
         reply1.user.name shouldBe testUser.name
         reply1.user.about shouldBe testUser.about
-
         val reply2 = userStub.getUser(getUserRequest { name = "terezi" })
+        // getting a user should return the exact response as setting
         reply2.user shouldBe reply1.user
+        val testUpdate = demo.v1.user { userId = reply1.user.userId; about = "W3 M4K3 OUR OWN LUCK 4ND YOU'R3 4BOUT TO PROV3 TH4T" }
+        val reply3 = userStub.setUser(setUserRequest { user = testUpdate })
+        // name should still be the same after updating about
+        reply3.user.name shouldBe testUser.name
+        reply3.user.about shouldBe testUpdate.about
+        logger.info("checking that getUser2 matches setUser2 response")
+        userStub.getUser(getUserRequest { name = "terezi" }).user shouldBe reply3.user
     }
 }

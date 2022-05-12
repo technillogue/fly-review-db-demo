@@ -3,12 +3,13 @@ package com.example.demo
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.ProtoReflectionService
 import org.jetbrains.exposed.sql.Database
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class Server(private val port: Int) {
-    val logger = LoggerFactory.getLogger(javaClass)
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    val server = ServerBuilder
+    val server: io.grpc.Server = ServerBuilder
         .forPort(port)
         .addService(UserService())
         .addService(ProtoReflectionService.newInstance())
@@ -27,7 +28,7 @@ class Server(private val port: Int) {
         )
     }
 
-    fun shutdown() = server.shutdown()
+    private fun shutdown(): io.grpc.Server = server.shutdown()
     fun awaitTermination() = server.awaitTermination()
 }
 
