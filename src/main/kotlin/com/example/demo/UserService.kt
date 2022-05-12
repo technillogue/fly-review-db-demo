@@ -5,9 +5,12 @@ import demo.v1.UserServiceGrpcKt
 import demo.v1.Demo
 import demo.v1.getUserResponse
 import demo.v1.setUserResponse
+import org.slf4j.LoggerFactory
 
 class UserService : UserServiceGrpcKt.UserServiceCoroutineImplBase() {
-    private fun exposedUserToUserProto(user: User?): Demo.User {
+    val logger = LoggerFactory.getLogger(javaClass)
+
+    private fun exposedUserToProtobufUser(user: User?): Demo.User {
         return demo.v1.user {
             if (user != null) {
                 this.userId = user.id.value
@@ -17,31 +20,32 @@ class UserService : UserServiceGrpcKt.UserServiceCoroutineImplBase() {
         }
     }
     override suspend fun getUser(request: Demo.GetUserRequest): Demo.GetUserResponse {
+        logger.info(request.toString())
         val user = transaction {
-            User.find {
-                Users.name eq request.name
-            }.firstOrNull()
+            User.find { Users.name eq request.name }.firstOrNull()
         }
-        return getUserResponse {this.user = exposedUserToUserProto(user)}
+        val response = getUserResponse {this.user = exposedUserToProtobufUser(user)}
+        logger.info(response.toString())
+        return response
     }
 
     override suspend fun setUser(request: Demo.SetUserRequest): Demo.SetUserResponse {
-        val name = request.user.name
-        val about = request.user.about
-        val id = request.user.userId
+        logger.info(request.user.toString())
         val user = transaction {
-            val foundUser = User.findById(id)
+            val foundUser = User.findById(request.user.userId)
+            logger.info(foundUser?.name)
+            logger.info(foundUser?.about)
             if (foundUser != null) {
-                foundUser.name = name ?: foundUser.name
-                foundUser.about = about ?: foundUser.about
+                if (request.user.name != null) foundUser.name = request.user.name
+                if (request.user.about != null) foundUser.about = request.user.about
                 foundUser
-            } else {
-                User.new{
-                    this.name = name
-                    this.about = about
-                }
+            } else User.new{
+                this.name = name
+                this.about = about
             }
         }
-        return setUserResponse {this.user = exposedUserToUserProto(user)}
+        val response = setUserResponse {this.user = exposedUserToProtobufUser(user)}
+        logger.info(response.toString())
+        return response
     }
 }

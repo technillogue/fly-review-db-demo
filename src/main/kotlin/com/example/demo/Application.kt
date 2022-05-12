@@ -5,7 +5,6 @@ import io.grpc.protobuf.services.ProtoReflectionService
 import org.jetbrains.exposed.sql.Database
 import org.slf4j.LoggerFactory
 
-
 class Server(private val port: Int) {
     val logger = LoggerFactory.getLogger(javaClass)
 

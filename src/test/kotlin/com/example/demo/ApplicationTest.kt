@@ -44,12 +44,13 @@ class ApplicationTest : DatabaseSpec() {
     }
 
     @Test
-    fun `Test if a user can set and retrieve a porfile`() = runBlocking {
+    fun `test setting and getting a user`() = runBlocking {
         // Stand up our service stubs
         val userStub = UserServiceGrpcKt.UserServiceCoroutineStub(channel)
-        val testUser = demo.v1.user {name = "terezi"; about = "W3 M4K3 OUR OWN LUCK 4ND YOU'R3 4BOUT TO PROV3 TH4T"}
+        val testUser = demo.v1.user { name = "terezi"; about = "W3 M4K3 OUR OWN LUCK 4ND YOU'R3 4BOUT TO PROV3 TH4T" }
         println("test")
-        val reply1 = userStub.setUser(setUserRequest { user = testUser})
+        // Set user should return what was set
+        val reply1 = userStub.setUser(setUserRequest { user = testUser })
         reply1.user.name shouldBe testUser.name
         reply1.user.about shouldBe testUser.about
 

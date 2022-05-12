@@ -9,7 +9,7 @@ object Config {
     // If we know it won't be set in the `.env` file ever we can just check System
     val flyAppName: String? = dotenv["FLY_APP_NAME"]
     val jdbcDatabaseUrl: String = dotenv["DATABASE_URL"]
-        ?.replace("postgres://(\\w*):(\\w*)@(.*)".toRegex(), "jdbc:postgresql://\\3?user=\\1&password=\\2")
+        ?.replace("postgres://(\\w*):(\\w*)@(.*)".toRegex(), "jdbc:postgresql://$3?user=$1&password=$2")
         ?: dotenv["JDBC_DATABASE_URL"]
         ?: "jdbc:postgresql://localhost:5432/postgres?user=${dotenv["USER"]}"
     val port: Int = dotenv["PORT"]?.toInt() ?: 8080
