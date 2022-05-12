@@ -1,0 +1,16 @@
+# fly.toml file generated for review-demo on 2022-05-11T21:36:11-04:00
+
+app = "review-demo"
+
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["tls"]
+    port = 443
+
+    [services.ports.tls_options]
+      alpn = ["h2"]

@@ -1,0 +1,30 @@
+syntax="proto3";
+
+package demo.v1;
+
+service UserService {
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  rpc SetUser (SetUserRequest) returns (SetUserResponse);
+}
+
+message GetUserRequest {
+  string name = 1;
+}
+
+message GetUserResponse {
+  User User = 1;
+}
+
+message SetUserRequest {
+  User User = 1;
+}
+
+message SetUserResponse {
+  User User = 1;
+}
+
+message User {
+  int32 user_id = 1;
+  string name = 2;
+  string about = 3;
+}

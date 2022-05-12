@@ -1,0 +1,34 @@
+name: Fly create review app and deploy
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened]
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  REVIEW_APP_SECRETS: ${{ secrets.REVIEW_APP_SECRETS }}
+jobs:
+  create-deploy:
+      name: Deploy app
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - uses: superfly/flyctl-actions/setup-flyctl@master
+
+        - name: Setup Gradle
+          uses: gradle/gradle-build-action@v2
+
+        # bash syntax to replace non-alnum with dashes
+        - run: echo "review-${GITHUB_HEAD_REF//[^[:alnum:]]/-}" > ./app
+        - run: echo "deploying to $(cat ./app)"
+        # - name: Setup tmate session # this lets you SSH into the container
+        #   uses: mxschmitt/action-tmate@v3
+        - run: flyctl apps create -o mobilecoin-twix $(cat ./app)
+        - run: if [ -n "$REVIEW_APP_SECRETS" ]; then flyctl secrets -a $(cat ./app) set $REVIEW_APP_SECRETS; fi;
+        - run: flyctl pg attach -a $(cat ./app) --postgres-app twix-review-db
+        - name: Execute DB Migrations
+          run: |
+            JDBC_DATABASE_URL="offline:postgresql" ./gradlew --quiet liquibaseUpdateSql|
+            grep -v liquibase-plugin > update.sql # gradle -q isn't quiet enough
+            echo -e '\n\q' >> update.sql # quit
+            cat update.sql | flyctl postgres connect --app twix-review-db --database $(cat ./app | tr - _)
+        - run: flyctl deploy -a $(cat ./app) --remote-only

@@ -1,0 +1,18 @@
+name: Fly deploy if app exists
+on:
+  push
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+jobs:
+  deploy:
+      name: Deploy app
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - uses: superfly/flyctl-actions/setup-flyctl@master
+        # unlike on pull_request, on push doesn't have GITHUB_HEAD_REF, so we use GITHUB_REF_NAME instead
+        - run: echo "review-${GITHUB_REF_NAME//[^[:alnum:]]/-}" > ./app
+        - run: echo "deploying to $(cat ./app) if it exists"
+        # - name: Setup tmate session # this lets you SSH into the container
+        #   uses: mxschmitt/action-tmate@v3
+        - run: if flyctl status -a $(cat ./app); then flyctl deploy -a $(cat ./app) --remote-only; fi;
