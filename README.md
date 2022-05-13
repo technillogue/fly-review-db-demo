@@ -2,6 +2,8 @@
 
 When you open a PR in this repo, it's automatically served at review-{branch name}.fly.dev. Pushing more commits redeploys. Closing or merging the PR destroys the app.
 
+You can test the review app for this branch with `grpcurl  review-feat-test-endpoint.fly.dev:443 demo.v1.UserService.Foo`.
+
 Generating repo secrets: 
 - `FLY_API_TOKEN`: [Install flyctl and login](https://fly.io/), then copy `fly auth token`
 - `REVIEW_APP_SECRETS`: The secrets for app in the same format as `fly secrets set`, e.g. `MY_SALT=iodized NUCLEAR_ACCESS_CODE=hunter2`

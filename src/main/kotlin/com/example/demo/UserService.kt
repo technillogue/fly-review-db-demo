@@ -2,6 +2,7 @@ package com.example.demo
 
 import demo.v1.Demo
 import demo.v1.UserServiceGrpcKt
+import demo.v1.fooResponse
 import demo.v1.getUserResponse
 import demo.v1.setUserResponse
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -49,5 +50,9 @@ class UserService : UserServiceGrpcKt.UserServiceCoroutineImplBase() {
         val response = setUserResponse { this.user = exposedUserToProtobufUser(user) }
         logger.info(response.toString())
         return response
+    }
+
+    override suspend fun foo(request: Demo.FooRequest): Demo.FooResponse {
+        return fooResponse {this.message = "Hello, whirl!" }
     }
 }
